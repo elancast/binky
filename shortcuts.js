@@ -154,7 +154,9 @@ function centerScreen() {
 // elem. DFS to it yo.
 function getElementLink(elem) {
     if (elem == null) return null;
-    if (elem.tagName.toLowerCase() == 'a') return elem; // return elem.getAttribute("href");
+    if (elem.tagName.toLowerCase() == 'a') {
+	if (elem.getAttribute('href') != '#') return elem;
+    }
     for (var i = 0; i < elem.children.length; i++) {
 	var linky = getElementLink(elem.children[i]);
 	if (linky != null) return linky;
