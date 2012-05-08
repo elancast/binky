@@ -104,9 +104,9 @@ function move(goUp) {
 
     // Move within the list...
     GLOB_currInd += goUp ? -1 : 1;
+    if (GLOB_currInd >= GLOB_resultsList.length) GLOB_currInd = -1;
     if (GLOB_currInd < 0) search();
     else {
-	GLOB_currInd %= GLOB_resultsList.length;
 	GLOB_lastElem = GLOB_resultsList[GLOB_currInd];
 	showFocus(GLOB_lastElem);
     }
@@ -222,6 +222,18 @@ function addPreResults(resultsList) {
     }
 }
 
+function addByClass(resultsList, clas) {
+    var elems = document.getElementsByClassName(clas);
+    if (elems.length > 0) {
+	resultsList.push(elems[elems.length - 1]);
+    }
+}
+
+function addPageLinks(resultsList) {
+    addByClass(resultsList, "sb_pagN");
+    addByClass(resultsList, "sb_pagP");
+}
+
 /* Returns an array of results that could be iterated over via the keyboard */
 function findBingResults() {
     // Ahh formatting weird. Hacky fix:
@@ -246,6 +258,9 @@ function findBingResults() {
 	if (!child.tagName || child.tagName.toLowerCase() != "li") continue;
 	addResultsItem(results, child);
     }
+
+    // Add page changing links
+    addPageLinks(results);
     return results;
 }
 
