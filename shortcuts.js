@@ -65,7 +65,7 @@ function handleKeyPress() {
 	break;
 
     case '/'.charCodeAt(0):
-	console.log("SEARCH");
+	search();
 	break;
 
     default:
@@ -86,6 +86,13 @@ var GLOB_resultsList = null;
 var GLOB_currInd = -1; // -1 => search bar
 var GLOB_lastElem = null;
 
+function unmarkCurr() {
+    if (GLOB_lastElem != null) {
+	removeFocus(GLOB_lastElem);
+	GLOB_lastElem = null;
+    }
+}
+
 function move(goUp) {
     // Get the results list...
     if (GLOB_currInd <= 0) {
@@ -93,21 +100,23 @@ function move(goUp) {
     }
 
     // Unmark the last element focused on...
-    if (GLOB_lastElem != null) {
-	removeFocus(GLOB_lastElem);
-	GLOB_lastElem = null;
-    }
+    unmarkCurr();
 
     // Move within the list...
     GLOB_currInd += goUp ? -1 : 1;
-    if (GLOB_currInd < 0) {
-	getSearchBar().focus();
-	GLOB_currInd = -1;
-    } else {
+    if (GLOB_currInd < 0) search();
+    else {
 	GLOB_currInd %= GLOB_resultsList.length;
 	GLOB_lastElem = GLOB_resultsList[GLOB_currInd];
 	showFocus(GLOB_lastElem);
     }
+}
+
+// Focuses on the search bar
+function search() {
+    unmarkCurr();
+    getSearchBar().focus();
+    GLOB_currInd = -1;
 }
 
 // Opens the currently focused thing. If meta key, opens in new tab.
