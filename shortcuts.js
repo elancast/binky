@@ -264,10 +264,14 @@ function findBingResults() {
     return results;
 }
 
-function getNextSibling(elem) {
+function getNextSibling(elem, orig, field) {
     if (elem == null) return null;
-    return elem.nextSibling ? elem.nextSibling :
-	getNextSibling(elem.parentElement);
+    if (elem.nextSibling) {
+	if (orig == null ||
+	    elem.nextSibling[field] > orig[field]) return elem.nextSibling;
+	return getNextSibling(elem.nextSibling, orig, field);
+    }
+    return getNextSibling(elem.parentElement, orig, field);
 }
 
 /******************************************************************************/
@@ -281,7 +285,8 @@ function removeFocus(elem) {
 function centerOnElem(elem, force) {
     var height = window.innerHeight;
     var seenBottom = height + window.scrollY;
-    var bottom = getNextSibling(elem).offsetTop, top = elem.offsetTop;
+    var bottom = getNextSibling(elem, elem, 'offsetTop').offsetTop;
+    var top = elem.offsetTop;
     if (force || bottom >= seenBottom || top <= window.scrollY) {
 	var middle = (top + bottom) / 2;
 	var offBy = middle - (window.scrollY + height / 2);
