@@ -22,7 +22,7 @@
     // Add any of these that you need
     //"background": {...},
     "content_scripts": [ {
-			     "matches": [ "http://www.bing.com/*" ],
+			     "matches": [ "http://www.bing.com/search*" ],
 			     "css": [],
 			     "js": [ "shortcuts.js" ]
 			 } ]

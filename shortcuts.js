@@ -97,6 +97,10 @@ function move(goUp) {
     // Get the results list...
     if (GLOB_currInd <= 0) {
 	GLOB_resultsList = findBingResults();
+	if (GLOB_resultsList == null || GLOB_resultsList.length <= 0) {
+	    console.error("Error gettng results list! uhohuhoh");
+	    return;
+	}
     }
 
     // Unmark the last element focused on...
