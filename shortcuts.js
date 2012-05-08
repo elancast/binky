@@ -18,14 +18,16 @@ function handleKeyPress() {
 
     // Ignore key presses on the input search element
     var tag = event.srcElement != null ? event.srcElement.tagName : null;
-    if (tag.toLowerCase() == 'input') {
-	console.log("IGNORING KEY PRESS ON INPUT");
+    if (tag.toLowerCase() == 'input') return;
+
+    // Ignore if control or alt or meta are pressed...don't want to override
+    if (event.ctrlKey || event.altKey || event.altGraphKey || event.metaKey) {
 	return;
     }
 
     // Start the proper action
     var keyId = event.keyIdentifier;
-    var key = keyId.toLowerCase() == "ENTER" ? 13 :
+    var key = keyId.toLowerCase() == "enter" ? 13 :
 	parseInt(keyId.substring(keyId.indexOf("+") + 1), 16);
     switch (key) {
     case 'j'.charCodeAt(0):
@@ -48,6 +50,10 @@ function handleKeyPress() {
 	console.log("QUESTION");
 	break;
 
+    case '/'.charCodeAt(0):
+	console.log("SEARCH");
+	break;
+
     default:
 	return;
     }
@@ -57,6 +63,14 @@ function handleKeyPress() {
 function injectKeyListener() {
     document.body.addEventListener('keyup', function() { handleKeyPress(); });
 }
+
+/******************************************************************************/
+// Action controllers for various keys pressed
+
+function move(up) {
+
+}
+
 
 /******************************************************************************/
 // Parses Bing!
