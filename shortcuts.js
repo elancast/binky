@@ -33,13 +33,11 @@ function handleKeyPress() {
     case 'j'.charCodeAt(0):
     case 'J'.charCodeAt(0):
 	move(false);
-	console.log("DOWN");
 	break;
 
     case 'k'.charCodeAt(0):
     case 'K'.charCodeAt(0):
 	move(true);
-	console.log("UP");
 	break;
 
     case 13:
@@ -71,23 +69,41 @@ function injectKeyListener() {
 
 var GLOB_resultsList = null;
 var GLOB_currInd = -1; // -1 => search bar
+var GLOB_lastElem = null;
 
 function move(goUp) {
     // Get the results list...
     if (GLOB_currInd <= 0) {
 	GLOB_resultsList = findBingResults();
-	console.log(GLOB_resultsList.length);
-	console.log(GLOB_resultsList);
+    }
+
+    // Unmark the last element focused on...
+    if (GLOB_lastElem != null) {
+	removeFocus(GLOB_lastElem);
+	GLOB_lastElem = null;
     }
 
     // Move within the list...
     GLOB_currInd += goUp ? -1 : 1;
-    
+    if (GLOB_currInd < 0) {
+	getSearchBar().focus();
+	GLOB_currInd = -1;
+    } else {
+	GLOB_currInd %= GLOB_resultsList.length;
+	GLOB_lastElem = GLOB_resultsList[GLOB_currInd];
+	showFocus(GLOB_lastElem);
+    }
 }
 
 
 /******************************************************************************/
 // Parses Bing!
+
+function getSearchBar() {
+    var elem = document.getElementById("sb_form_q");
+    if (elem != null) return elem;
+    return document.getElementsByTagName("input")[0];
+}
 
 function addResultsItem(resultsList, elem) {
     // Get the class and return if it's not expected
@@ -153,17 +169,35 @@ function findBingResults() {
     return results;
 }
 
+function getNextSibling(elem) {
+    if (elem == null) return null;
+    return elem.nextSibling ? elem.nextSibling :
+	getNextSibling(elem.parentElement);
+}
+
 /******************************************************************************/
 // Handles UI part of this project
 
 /* Removes focus from the search result */
-function removeFocus() {
-
+function removeFocus(elem) {
+    elem.style.backgroundColor = "white";
 }
 
 /* Shows focus on the specific search result */
-function showFocus() {
+function showFocus(elem) {
+    // Indicate
+    elem.style.backgroundColor = "#F5F5DC";
+    elem.focus();
 
+    // Scroll to have the element in the center if it is off the page
+    var height = window.innerHeight;
+    var seenBottom = height + window.scrollY;
+    var bottom = getNextSibling(elem).offsetTop, top = elem.offsetTop;
+    if (bottom >= seenBottom || top <= window.scrollY) {
+	var middle = (top + bottom) / 2;
+	var offBy = middle - (window.scrollY + height / 2);
+	window.scrollBy(0, offBy + 10);
+    }
 }
 
 /******************************************************************************/
