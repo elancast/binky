@@ -55,6 +55,11 @@ function handleKeyPress() {
 	open(event);
 	break;
 
+    case 'l'.charCodeAt(0):
+    case 'L'.charCodeAt(0):
+	centerScreen();
+	break;
+
     case '?'.charCodeAt(0):
 	console.log("QUESTION");
 	break;
@@ -126,6 +131,11 @@ function open(keyEvent) {
 	return;
     }
     linkTag.dispatchEvent(evt);
+}
+
+function centerScreen() {
+    if (GLOB_lastElem == null) return;
+    centerOnElem(GLOB_lastElem, true);
 }
 
 /******************************************************************************/
@@ -227,6 +237,17 @@ function removeFocus(elem) {
     elem.style.backgroundColor = "white";
 }
 
+function centerOnElem(elem, force) {
+    var height = window.innerHeight;
+    var seenBottom = height + window.scrollY;
+    var bottom = getNextSibling(elem).offsetTop, top = elem.offsetTop;
+    if (force || bottom >= seenBottom || top <= window.scrollY) {
+	var middle = (top + bottom) / 2;
+	var offBy = middle - (window.scrollY + height / 2);
+	window.scrollBy(0, offBy + 10);
+    }
+}
+
 /* Shows focus on the specific search result */
 function showFocus(elem) {
     // Indicate
@@ -234,14 +255,7 @@ function showFocus(elem) {
     elem.focus();
 
     // Scroll to have the element in the center if it is off the page
-    var height = window.innerHeight;
-    var seenBottom = height + window.scrollY;
-    var bottom = getNextSibling(elem).offsetTop, top = elem.offsetTop;
-    if (bottom >= seenBottom || top <= window.scrollY) {
-	var middle = (top + bottom) / 2;
-	var offBy = middle - (window.scrollY + height / 2);
-	window.scrollBy(0, offBy + 10);
-    }
+    centerOnElem(elem, false);
 }
 
 /******************************************************************************/
