@@ -1,0 +1,29 @@
+{
+    "name": "Bing Keyboard Shortcuts",
+    "version": "1.0",
+    "manifest_version": 2,
+
+    // Recommended
+    "description": "Gives you the power of keyboard shortcuts for Bing",
+    // "icons": { }, http://code.google.com/chrome/extensions/manifest.html#icons
+
+    // Pick one (or none)
+    /*
+    "browser_action": {
+      ...},
+  "page_action": {
+      ...},
+  "theme": {
+      ...},
+  "app": {
+      ...},
+     */
+
+    // Add any of these that you need
+    //"background": {...},
+    "content_scripts": [ {
+			     "matches": [ "http://www.bing.com/*" ],
+			     "css": [],
+			     "js": [ "shortcuts.js" ]
+			 } ]
+}
