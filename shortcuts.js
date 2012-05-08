@@ -173,24 +173,12 @@ function addResultsItem(resultsList, elem) {
 	return;
 
     case 'sb_ans':
-	// Get the container....
-	var cont = null;
+	// Look for the signature container and add kids
 	for (var i = 0; i < elem.children.length; i++) {
 	    var child = elem.children[i];
 	    if (child.getAttribute("class") == 'ansC') {
-		cont = child;
-		break;
+		addAnsC(resultsList, child);
 	    }
-	}
-	if (cont == null) {
-	    console.error("unexepcted format");
-	    return;
-	}
-
-	// Add its kiddies
-	for (var i = 0; i < cont.children.length; i++) {
-	    var child = cont.children[i];
-	    if (child.getAttribute("class") == 'ans') resultsList.push(child);
 	}
 	break;
 
@@ -199,8 +187,38 @@ function addResultsItem(resultsList, elem) {
     }
 }
 
+function addAnsC(resultsList, cont) {
+    if (cont == null) {
+	console.error("unexepcted format");
+	return;
+    }
+
+    // Add its kiddies
+    for (var i = 0; i < cont.children.length; i++) {
+	var child = cont.children[i];
+	if (child.getAttribute("class") == 'ans') resultsList.push(child);
+    }
+}
+
+// Adds anything useful between results beginning and results id tag
+function addPreResults(resultsList) {
+    var elem = document.getElementById("results_container");
+    if (elem == null) return;
+    for (var i = 0; i < elem.children.length; i++) {
+	var kid = elem.children[i];
+	var clas = kid.getAttribute("class");
+	if (clas == "ansC") {
+	    addAnsC(resultsList, kid);
+	}
+    }
+}
+
 /* Returns an array of results that could be iterated over via the keyboard */
 function findBingResults() {
+    // Ahh formatting weird. Hacky fix:
+    var results = [];
+    addPreResults(results);
+
     // Get the parent tag of all results
     var resultsElem = document.getElementById("results");
     var elem = null;
@@ -214,7 +232,6 @@ function findBingResults() {
     if (elem == null) return null;
 
     // Add all of its children to a list of possible elements
-    var results = [];
     for (var i = 0; i < elem.children.length; i++) {
 	var child = elem.children[i];
 	if (!child.tagName || child.tagName.toLowerCase() != "li") continue;
