@@ -86,8 +86,13 @@ function handleKeyPress() {
     }
 }
 
+function blurry() {
+    clear();
+}
+
 /* Called upon start-up, injects listener for keys */
 function injectKeyListener() {
+    window.onblur = function() { blurry(); };
     document.body.addEventListener('keydown', function() { handleMetaKey(); });
     document.body.addEventListener('keyup', function() { handleKeyPress(); });
 }
@@ -148,6 +153,18 @@ function move(goUp) {
 	GLOB_lastElem = GLOB_resultsList[GLOB_currInd];
 	GLOB_star = showFocus(GLOB_lastElem, GLOB_star);
     }
+}
+
+function unclear() {
+    if (GLOB_currInd < 0) return;
+    GLOB_lastElem = GLOB_resultsList[GLOB_currInd];
+    GLOB_star = showFocus(GLOB_lastElem, GLOB_star);
+}
+
+function clear() {
+    unmarkCurr();
+    closeOversets();
+    GLOB_currInd = -1;
 }
 
 // Focuses on the search bar

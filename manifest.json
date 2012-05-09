@@ -1,30 +1,15 @@
 {
-    "name": "Binky: Bing Keyboard Shortcuts",
+    "name": "Binkey: Bing Keyboard Shortcuts",
     "version": "1.0",
     "manifest_version": 2,
 
-    // Recommended
-    "description": "Gives you the power of keyboard shortcuts for Bing",
+    "description": "Gives you the power of keyboard shortcuts for Bing. Search Bing and press 'h' to begin!",
     "icons": {
 	"16" : "icon16.png",
 	"48" : "icon48.png",
 	"128" : "icon.png"
-    }, //http://code.google.com/chrome/extensions/manifest.html#icons
+    },
 
-    // Pick one (or none)
-    /*
-    "browser_action": {
-      ...},
-  "page_action": {
-      ...},
-  "theme": {
-      ...},
-  "app": {
-      ...},
-     */
-
-    // Add any of these that you need
-    //"background": {...},
     "content_scripts": [ {
 			     "matches": [ "http://www.bing.com/search*" ],
 			     "css": [],
