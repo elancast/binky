@@ -5,7 +5,11 @@
 
     // Recommended
     "description": "Gives you the power of keyboard shortcuts for Bing",
-    // "icons": { }, http://code.google.com/chrome/extensions/manifest.html#icons
+    "icons": {
+	"16" : "icon16.png",
+	"48" : "icon48.png",
+	"128" : "icon.png"
+    }, //http://code.google.com/chrome/extensions/manifest.html#icons
 
     // Pick one (or none)
     /*

@@ -98,10 +98,10 @@ function injectKeyListener() {
 var GLOB_HELP_TEXT = [
     ["j", "Move down: Focus on the search result below the currently selected result."],
     ["k", "Move up: Focus on the search result above the currently selected result."],
-    ["o", "Open the currently selected result. Can hold shift, meta key, or control and opening will work as normal."],
+    ["o or enter", "Open the currently selected result. For enter, can hold shift, meta key, or control."],
     ["l", "Center on the currently selected result."],
     ["r", "Show rewards messages."],
-    ["h", "Show this message."],
+    ["h or ?", "Show this message."],
     ["/", "Focus on search box."],
     ["q or escape", "Close this box."]
 ];
@@ -399,7 +399,13 @@ function showFocus(elem, img) {
 
 function findMessage(elem) {
     if (elem == null) return null;
-    if (elem.getAttribute("class") == "message") return elem.innerHTML;
+    if (elem.getAttribute("class") == "message") {
+	var msg = elem.innerHTML;
+	if (msg.indexOf('</b>&nbsp;') >= 0) {
+	    msg = msg.replace('</b>&nbsp;', '</b><br>');
+	}
+	return msg;
+    }
     for (var i = 0; i < elem.children.length; i++) {
 	var ret = findMessage(elem.children[i]);
 	if (ret != null) return ret;
@@ -412,7 +418,8 @@ function findStatus(elem) {
     if (elem.getAttribute("class") == "relative") {
 	var stat = elem.innerHTML;
 	if (stat.indexOf("<br> Credits Earned") >= 0) {
-	    stat = stat.replace("<br> Credits Earned", ' Credits Earned');
+	    //stat = stat.replace("<br> Credits Earned", ' Credits Earned');
+	    stat = stat.replace("<br> Credits Earned", '');
 	}
 	return stat;
     }
@@ -477,8 +484,8 @@ function getTableOverset(rewards, headers, aligns, noClose) {
     // Stylize
     div.style.position = "fixed";
     div.style.top = "150px";
-    div.style.marginLeft = "110px";
-    div.style.backgroundColor = "#F5F5DC";
+    div.style.marginLeft = "170px";
+    div.style.backgroundColor = "#FFFFCC";
     tably.style.width = "560px";
     tably.style.padding = "20px";
 
