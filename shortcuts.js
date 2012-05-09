@@ -60,8 +60,21 @@ function handleKeyPress() {
 	centerScreen();
 	break;
 
+    case 'r'.charCodeAt(0):
+    case 'R'.charCodeAt(0):
+	showRewards();
+	break;
+
+    case 27:
+    case 'q'.charCodeAt(0):
+    case 'Q'.charCodeAt(0):
+	closeOversets();
+	break;
+
     case '?'.charCodeAt(0):
-	console.log("QUESTION");
+    case 'h'.charCodeAt(0):
+    case 'H'.charCodeAt(0):
+	showHelp();
 	break;
 
     case '/'.charCodeAt(0):
@@ -80,16 +93,37 @@ function injectKeyListener() {
 }
 
 /******************************************************************************/
+// Help text
+
+var GLOB_HELP_TEXT = [
+    ["j", "Move down: Focus on the search result below the currently selected result."],
+    ["k", "Move up: Focus on the search result above the currently selected result."],
+    ["o", "Open the currently selected result. Can hold shift, meta key, or control and opening will work as normal."],
+    ["l", "Center on the currently selected result."],
+    ["r", "Show rewards messages."],
+    ["h", "Show this message."],
+    ["/", "Focus on search box."],
+    ["q or escape", "Close this box."]
+];
+
+/******************************************************************************/
 // Action controllers for various keys pressed
 
 var GLOB_resultsList = null;
 var GLOB_currInd = -1; // -1 => search bar
 var GLOB_lastElem = null;
 
+var GLOB_help = null;
+var GLOB_star = null;
+var GLOB_rewardsDiv = null;
+
 function unmarkCurr() {
     if (GLOB_lastElem != null) {
 	removeFocus(GLOB_lastElem);
 	GLOB_lastElem = null;
+    }
+    if (GLOB_star != null) {
+	GLOB_star.style.display = "none";
     }
 }
 
@@ -112,7 +146,7 @@ function move(goUp) {
     if (GLOB_currInd < 0) search();
     else {
 	GLOB_lastElem = GLOB_resultsList[GLOB_currInd];
-	showFocus(GLOB_lastElem);
+	GLOB_star = showFocus(GLOB_lastElem, GLOB_star);
     }
 }
 
@@ -121,6 +155,33 @@ function search() {
     unmarkCurr();
     getSearchBar().focus();
     GLOB_currInd = -1;
+    closeOversets();
+}
+
+function closeOversets() {
+    closeRewards();
+    closeHelp();
+}
+
+function closeRewards() {
+    if (GLOB_rewardsDiv != null) {
+	GLOB_rewardsDiv.style.display = "none";
+    }
+}
+
+function closeHelp() {
+    if (GLOB_help != null) {
+	GLOB_help.style.display = "none";
+    }
+}
+
+function showRewards() {
+    closeOversets();
+    if (GLOB_rewardsDiv != null) {
+	// GLOB_rewardsDiv.style.display = "block";
+	GLOB_rewardsDiv.parentElement.removeChild(GLOB_rewardsDiv);
+    }
+    loadRewards();
 }
 
 // Opens the currently focused thing. If meta key, opens in new tab.
@@ -149,6 +210,15 @@ function open(keyEvent) {
 function centerScreen() {
     if (GLOB_lastElem == null) return;
     centerOnElem(GLOB_lastElem, true);
+}
+
+function showHelp() {
+    closeOversets();
+    if (GLOB_help == null) {
+	GLOB_help = getTableOverset(GLOB_HELP_TEXT, ['Key', 'Description'],
+				    ['center', 'left'], true);
+    }
+    GLOB_help.style.display = "block";
 }
 
 /******************************************************************************/
@@ -301,13 +371,164 @@ function centerOnElem(elem, force) {
 }
 
 /* Shows focus on the specific search result */
-function showFocus(elem) {
+function showFocus(elem, img) {
     // Indicate
     elem.style.backgroundColor = "#F5F5DC";
     elem.focus();
 
+    // Add a star next to it...
+    if (img == null) {
+	img = document.createElement("span");
+	img.innerHTML = "*";
+	img.style.left = "77px";
+	img.style.fontSize = "76pt";
+	//img.src = chrome.extension.getURL("img/arrow.jpg");
+	img.style.position = "absolute";
+	document.body.appendChild(img);
+    }
+    img.style.top = "" + (elem.offsetTop + 2) + "px";
+    img.style.display = "block";
+
     // Scroll to have the element in the center if it is off the page
     centerOnElem(elem, false);
+    return img;
+}
+
+/******************************************************************************/
+// Rewards stuffs
+
+function findMessage(elem) {
+    if (elem == null) return null;
+    if (elem.getAttribute("class") == "message") return elem.innerHTML;
+    for (var i = 0; i < elem.children.length; i++) {
+	var ret = findMessage(elem.children[i]);
+	if (ret != null) return ret;
+    }
+    return null;
+}
+
+function findStatus(elem) {
+    if (elem == null) return null;
+    if (elem.getAttribute("class") == "relative") {
+	var stat = elem.innerHTML;
+	if (stat.indexOf("<br> Credits Earned") >= 0) {
+	    stat = stat.replace("<br> Credits Earned", ' Credits Earned');
+	}
+	return stat;
+    }
+    for (var i = 0; i < elem.children.length; i++) {
+	var ret = findStatus(elem.children[i]);
+	if (ret != null) return ret;
+    }
+    return null;
+}
+
+function parseRewards(elem) {
+    var rewards = [];
+    for (var i = 0; i < elem.children.length; i++) {
+	var kid = elem.children[i];
+	if (kid.getAttribute("class") != 'item') continue;
+	var msg = findMessage(kid);
+	var stat = findStatus(kid);
+	if (msg == null || stat == null) continue;
+	rewards.push([ msg, stat ]);
+    }
+    return rewards;
+}
+
+function loadRewardsCallback() {
+    if (this.readyState != 4) return;
+    if (this.status != 200) {
+	console.warn("Bad rewards response!");
+    }
+
+    // Get it in HTML form...mwahahaha
+    var start = this.responseText.indexOf('<div id="messageContainer"');
+    var end = this.responseText.indexOf('<div class="links">');
+    if (start < 0 || end < 0) {
+	console.error("Invalid start (" + start + ") or end (" + end
+		      + ") for text " + this.responseText);
+	return;
+    }
+    var divvy = document.createElement("div");
+    divvy.innerHTML = this.responseText.substring(start, end);
+
+    // Run through and find what we need
+    var results = parseRewards(divvy.children[0]);
+    GLOB_rewardsDiv = getTableOverset(results, ["Rewards message", "Status"],
+				      ['left', 'center']);
+}
+
+function loadRewards() {
+    var url = 'http://www.bing.com/rewardsapp/flyoutpage?style=v1';
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = loadRewardsCallback;
+    xhr.open("GET", url, true);
+    xhr.send();
+}
+
+/******************************************************************************/
+// Functions for the table overset
+
+function getTableOverset(rewards, headers, aligns, noClose) {
+    var tably = tablizeItems(rewards, headers, aligns);
+    var div = document.createElement("div");
+
+    // Stylize
+    div.style.position = "fixed";
+    div.style.top = "150px";
+    div.style.marginLeft = "110px";
+    div.style.backgroundColor = "#F5F5DC";
+    tably.style.width = "560px";
+    tably.style.padding = "20px";
+
+    // Border?
+    div.style.borderStyle = "dashed";
+    div.style.borderWidth = "3px";
+
+    // Some useful info
+    if (!noClose) {
+	var tr = document.createElement("tr");
+	tr.style.marginTop = "10px";
+	var spanny = document.createElement("td");
+	spanny.innerHTML = "<br>Press escape or q to close this.";
+	tr.appendChild(spanny);
+	tably.appendChild(tr);
+    }
+
+    // Give it kids
+    div.appendChild(tably);
+    document.body.appendChild(div);
+    return div;
+}
+
+function tablizeItems(rewards, headers, aligns) {
+    var table = document.createElement("table");
+    var trh = document.createElement('tr');
+    var th1 = document.createElement('th');
+    var th2 = document.createElement('th');
+    th1.innerHTML = headers[0];
+    th2.innerHTML = headers[1];
+    trh.appendChild(th1);
+    trh.appendChild(th2);
+    table.appendChild(trh);
+
+    for (var i = 0; i < rewards.length; i++) {
+	var rew = rewards[i];
+	var tr = document.createElement('tr');
+	var td1 = document.createElement('td');
+	var td2 = document.createElement('td');
+
+	// Create table stuff
+	td1.innerHTML = rew[0];
+	td2.innerHTML = rew[1];
+	td1.style.textAlign = aligns[0];
+	td2.style.textAlign = aligns[1];
+	tr.appendChild(td1);
+	tr.appendChild(td2);
+	table.appendChild(tr);
+    }
+    return table;
 }
 
 /******************************************************************************/
