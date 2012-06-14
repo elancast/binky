@@ -31,6 +31,10 @@ function handleKeyPress() {
     var key = keyId.toLowerCase() == "enter" ? 13 :
 	parseInt(keyId.substring(keyId.indexOf("+") + 1), 16);
 
+    // Up and down arrows
+    if (keyId.toLowerCase() == "down") key = 'j'.charCodeAt(0);
+    else if (keyId.toLowerCase() == "up") key = 'k'.charCodeAt(0);
+
     // Be careful if control or alt or meta are pressed...don't want to override
     if (key != 13) {
 	if (event.ctrlKey || event.altKey || event.altGraphKey

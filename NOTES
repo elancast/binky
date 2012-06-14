@@ -1,3 +1,12 @@
+MORE FEATURES:
+-see who likes
+-log in to windows live
+-do the earn credits via keyboard shortcut
+-arrow keys to scroll
+-pick up where left offf....(so when open in new tab and return, don't
+ start over) - also maybe redo keys when return to window
+-shortcut to see today's bing picture
+
 What needs to happen:
 -listener on body for key presses
   -ignore keypresses on anyhting that could take input -- i.e, the search box
